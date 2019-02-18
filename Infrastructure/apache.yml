@@ -1,5 +1,5 @@
 ---
-- hosts: newuser
+- hosts: myservers
 
   become: yes
   become_method: sudo
@@ -9,6 +9,63 @@
 
     - name: Copy html
       copy: src=index.html dest=/var/www/html/index.html
+
+    - name: Copy httpd.conf
+      copy: src=httpd.conf dest=/etc/httpd/conf/httpd.conf
+
+    - name: install mod_ssl
+      shell: yum install mod_ssl -y
+
+    - name : Create dir private
+      file:
+        path: /etc/ssl/private
+        state: directory
+        mode: 700
+
+    - name: Copy cpsskey
+      copy:
+        src: files/ca.crt
+        dest: /etc/pki/tls/certs/ca.crt
+        owner: root
+        group: root
+        mode: 644
+
+    - name: Copy cpkey
+      copy:
+        src: files/ca.key
+        dest: /etc/pki/tls/private/ca.key
+        owner: root
+        group: root
+        mode: 644
+
+    - name: Copy cpcert
+      copy:
+        src: files/ca.csr
+        dest: /etc/ssl/private/ca.csr
+        owner: root
+        group: root
+        mode: 644
+
+    - name: Copy ssl.conf
+      copy: src=ssl.conf dest=/etc/httpd/conf.d/ssl.conf
+
+    - name : Create sites-available
+      file:
+        path: /etc/httpd/sites-available
+        state: directory
+        mode: 700
+
+    - name : Create sites-enabled
+      file:
+        path: /etc/httpd/sites-enabled
+        state: directory
+        mode: 700
+
+    - name: Copy welcome.conf
+      copy: src=welcome.conf dest=/etc/httpd/sites-available/welcome.conf
+
+    - name: Copy welcome.conf
+      copy: src=welcome.conf dest=/etc/httpd/sites-enabled/welcome.conf
 
     - name: start apache
       service:
